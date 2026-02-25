@@ -42,7 +42,7 @@ body {
 
 /* HERO */
 .hero {
-    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
                 url("images/hero-merida.jpg");
     background-size: cover;
     background-position: center;
@@ -326,3 +326,129 @@ body {
     }
 }
 
+/* ===== TOPBAR ===== */
+.topbar {
+    background: #0a3d62;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+}
+
+.topbar nav {
+    display: flex;
+    gap: 15px;
+}
+
+.topbar a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.logo {
+    width: 55px;
+}
+
+.hero {
+    background-image: 
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+        url("images/hero-merida.jpg");
+
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-overlay {
+    background: rgba(0,0,0,0.45);
+    padding: 30px 40px;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+}
+
+.hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+
+    .topbar {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .hero {
+        min-height: 45vh;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+}
+
+/* ===== TOPBAR SIMPLE ===== */
+.topbar {
+    background: #0a3d62;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+}
+
+.site-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.logo {
+    width: 55px;
+    height: auto;
+}
+
+/* ===== HERO LIMPIO ===== */
+.hero {
+    background-image: url("images/hero-merida.jpg");
+    background-size: cover;
+    background-position: center;
+    min-height: 55vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-overlay {
+    background: rgba(0,0,0,0.55);
+    padding: 30px 40px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+}
+
+.hero-overlay h1 {
+    font-size: 2.2rem;
+    margin: 0;
+}
+
+.game-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#gameCanvas {
+    background: #eaeaea;
+    border: 2px solid #0a3d62;
+    max-width: 100%;
+}
+
+.game-info {
+    margin-top: 10px;
+    font-weight: bold;
+}

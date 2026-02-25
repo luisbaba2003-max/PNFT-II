@@ -10,23 +10,13 @@
 <body>
 
 <!-- HEADER -->
-<header class="header">
-    <div class="header-content">
-        <img src="images/logo-izquierda.png" alt="Logo institución" class="logo">
-
-        <div class="title-nav">
-            <h1>Casco Central de Mérida</h1>
-            <nav>
-                <a href="#inicio">Inicio</a>
-                <a href="#ubicacion">Ubicación</a>
-                <a href="#lugar">El Lugar</a>
-                <a href="#atractivos">Atractivos</a>
-            </nav>
-        </div>
-
-        <img src="images/logo-derecha.png" alt="Logo proyecto" class="logo">
-    </div>
+<header class="topbar">
+    <img src="images/logo1.png" class="logo">
+    <h2 class="site-title">Casco Central de Mérida</h2>
+    <img src="images/logo2.png" class="logo">
 </header>
+
+
 
 <!-- HERO -->
 <section id="inicio" class="hero">
@@ -189,35 +179,326 @@
     </div>
 </section>
 
-<section id="galeria" class="section reveal">
-    <h2>Galería de atractivos</h2>
+<section id="juego" class="section">
+    <h2>Minijuego</h2>
 
-    <div class="slider">
-
-        <button class="arrow left" onclick="prevSlide()">&#10094;</button>
-
-        <div class="slide">
-            <img id="slide-image" src="images/plaza-bolivar.jpg" alt="Plaza Bolívar">
-            <div class="slide-text">
-                <h3 id="slide-title">Plaza Bolívar</h3>
-                <p id="slide-description">
-                    Principal espacio público del casco central de Mérida,
-                    punto de encuentro cultural y social de la ciudad.
-                </p>
-            </div>
-        </div>
-
-        <button class="arrow right" onclick="nextSlide()">&#10095;</button>
-
+    <div class="game-container">
+        <canvas id="gameCanvas" width="1100" height="500"></canvas>
+        <p class="game-info">Presiona ESPACIO para saltar</p>
     </div>
 </section>
 
 <!-- FOOTER -->
 <footer class="footer">
-    <p>Elaborado por Grupo 3 PNFT II – Luis Salcedo, Maria Dugarte, Sahira Zerpa, Mariolkys Vielma </p>
+    <p>Proyecto universitario – PNFT II. Grupo 3: Luis Salcedo, Sahira Zerpa, Maria Dugarte, Mariolkys Vielma.</p>
 </footer>
 
 <script src="script.js"></script>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+/* ===== IMÁGENES ===== */
+const backgroundImg = new Image();
+backgroundImg.src = "images/fondo-merida.jpg";
+
+const playerImg = new Image();
+playerImg.src = "images/turista.png";
+
+/* ===== SONIDOS ===== */
+const loseSound = new Audio("sounds/lose.mp3");
+const pointSound = new Audio("sounds/point.mp3");
+const jumpSound = new Audio("sounds/jump.mp3");
+jumpSound.volume = 0.5;
+
+loseSound.volume = 0.6;
+pointSound.volume = 0.4;
+
+/* ===== LUGARES COMPLETOS ===== */
+const places = [
+
+{
+    name: "Plaza Bolívar",
+    image: "images/plaza.png",
+    fact: "¿Sabías que casi todas las ciudades venezolanas tienen una Plaza Bolívar en el centro? Es una tradición heredada desde la época colonial."
+},
+
+{
+    name: "Catedral Metropolitana",
+    image: "images/catedral.png",
+    fact: "Esta catedral ha resistido terremotos históricos de los Andes y sigue siendo uno de los símbolos religiosos más importantes de Mérida."
+},
+
+{
+    name: "Palacio de Gobierno",
+    image: "images/palacio.png",
+    fact: "Desde este edificio se toman decisiones que influyen en todo el estado Mérida. Su arquitectura representa poder y tradición republicana."
+},
+
+{
+    name: "Rectorado ULA",
+    image: "images/rectorado.png",
+    fact: "La Universidad de Los Andes fue fundada en 1785, lo que la convierte en una de las instituciones educativas más antiguas de Venezuela."
+},
+
+{
+    name: "Heladería Coromoto",
+    image: "images/coromoto.png",
+    fact: "Posee el Récord Guinness por ofrecer más de 800 sabores de helado. ¡Incluso ha creado sabores tan curiosos como ajo o espagueti!"
+},
+
+{
+    name: "Casa de los Gobernadores",
+    image: "images/casa-gobernadores.png",
+    fact: "Este edificio histórico fue residencia de antiguos gobernadores coloniales y hoy representa parte fundamental del patrimonio arquitectónico merideño."
+},
+
+{
+    name: "Centro Cultural Tulio Febres Cordero",
+    image: "images/tulio.png",
+    fact: "Nombrado en honor al escritor e historiador merideño Tulio Febres Cordero, este centro promueve la literatura, el arte y la identidad andina."
+}
+
+];
+
+
+let groundY = 380;
+let baseSpeed = 7;
+let bgX = 0;
+
+/* ===== JUGADOR ===== */
+let player = {
+    x: 120,
+    y: groundY - 160,
+    width: 150,
+    height: 150,
+    dy: 0,
+    gravity: 1,
+    jumpPower: -25,
+    grounded: true
+};
+
+let obstacles = [];
+let score = 0;
+let gameOver = false;
+let lostPlace = null;
+
+let gameState = "start"; // start | playing | gameover
+
+/* ===== FONDO PARALLAX ===== */
+function drawBackground() {
+    bgX -= 2;
+    if (bgX <= -canvas.width) bgX = 0;
+
+    ctx.drawImage(backgroundImg, bgX, 0, canvas.width, canvas.height);
+    ctx.drawImage(backgroundImg, bgX + canvas.width, 0, canvas.width, canvas.height);
+}
+
+/* ===== JUGADOR ===== */
+function drawPlayer() {
+    ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+}
+
+function updatePlayer() {
+    player.dy += player.gravity;
+    player.y += player.dy;
+
+    if (player.y >= groundY - player.height) {
+        player.y = groundY - player.height;
+        player.dy = 0;
+        player.grounded = true;
+    }
+}
+
+/* ===== CREAR OBSTÁCULO ===== */
+function spawnObstacle() {
+
+    let place = places[Math.floor(Math.random() * places.length)];
+    let img = new Image();
+    img.src = place.image;
+
+    let isFlying = Math.random() < 0.35;
+    let size = isFlying ? 130 : 160;
+
+    obstacles.push({
+        x: canvas.width,
+        y: isFlying ? groundY - 260 : groundY - size,
+        width: size,
+        height: size,
+        speed: baseSpeed + Math.random() * 3,
+        image: img,
+        place: place
+    });
+}
+
+/* ===== OBSTÁCULOS ===== */
+function updateObstacles() {
+
+    obstacles.forEach((obstacle, index) => {
+
+        obstacle.x -= obstacle.speed;
+
+        ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+        if (
+            player.x + 40 < obstacle.x + obstacle.width &&
+            player.x + player.width - 40 > obstacle.x &&
+            player.y + 40 < obstacle.y + obstacle.height &&
+            player.y + player.height - 40 > obstacle.y
+        ) {
+            gameState = "gameover";
+lostPlace = obstacle.place;
+loseSound.currentTime = 0;
+loseSound.play();
+        }
+
+        if (obstacle.x + obstacle.width < 0) {
+    obstacles.splice(index, 1);
+    score++;
+    pointSound.currentTime = 0;
+    pointSound.play();
+}
+    });
+}
+
+/* ===== SCORE ===== */
+function drawScore() {
+    ctx.fillStyle = "black";
+    ctx.font = "26px Arial";
+    ctx.fillText("Puntos: " + score, canvas.width - 200, 40);
+}
+
+/* ===== GAME LOOP ===== */
+function gameLoop() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (gameState === "start") {
+        drawStartScreen();
+    }
+
+    else if (gameState === "playing") {
+        drawBackground();
+        drawPlayer();
+        updatePlayer();
+        updateObstacles();
+        drawScore();
+    }
+
+    else if (gameState === "gameover") {
+        showGameOverScreen();
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+/* ===== PANTALLA FINAL EDUCATIVA ===== */
+function showGameOverScreen() {
+
+    ctx.fillStyle = "rgba(0,0,0,0.75)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.font = "36px Arial";
+    ctx.fillText("¡Te has topado con " + lostPlace.name + "!", 180, 100);
+
+    let img = new Image();
+    img.src = lostPlace.image;
+    ctx.drawImage(img, canvas.width/2 - 150, 130, 300, 220);
+
+    ctx.font = "24px Arial";
+    wrapText(lostPlace.fact, 150, 380, 800, 30);
+
+    ctx.font = "22px Arial";
+    ctx.fillText("Toca la pantalla para seguir explorando Mérida", 250, 450);
+}
+
+function drawStartScreen() {
+
+    drawBackground();
+
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.font = "60px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Explorando el Casco Central", canvas.width / 2, 180);
+
+    ctx.font = "30px Arial";
+    ctx.fillText("Salta los lugares históricos", canvas.width / 2, 250);
+
+    ctx.font = "28px Arial";
+    ctx.fillText("Toca la pantalla para comenzar", canvas.width / 2, 320);
+
+    ctx.textAlign = "start";
+}
+
+/* ===== TEXTO MULTILÍNEA ===== */
+function wrapText(text, x, y, maxWidth, lineHeight) {
+    let words = text.split(" ");
+    let line = "";
+
+    for(let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + " ";
+        let metrics = ctx.measureText(testLine);
+        let testWidth = metrics.width;
+
+        if (testWidth > maxWidth && n > 0) {
+            ctx.fillText(line, x, y);
+            line = words[n] + " ";
+            y += lineHeight;
+        } else {
+            line = testLine;
+        }
+    }
+    ctx.fillText(line, x, y);
+}
+
+/* ===== CONTROLES ===== */
+canvas.addEventListener("click", handleInput);
+canvas.addEventListener("touchstart", handleInput);
+
+function handleInput() {
+
+    if (gameState === "start") {
+        gameState = "playing";
+        return;
+    }
+
+    if (gameState === "playing" && player.grounded) {
+
+        player.dy = player.jumpPower;
+        player.grounded = false;
+
+        jumpSound.currentTime = 0;
+        jumpSound.play();
+    }
+
+    else if (gameState === "gameover") {
+        restartGame();
+    }
+}
+
+function restartGame() {
+    obstacles = [];
+    score = 0;
+    baseSpeed = 7;
+    bgX = 0;
+    player.y = groundY - player.height;
+    gameState = "playing";
+}
+
+/* ===== DIFICULTAD PROGRESIVA ===== */
+setInterval(() => {
+    baseSpeed += 0.5;
+}, 5000);
+
+setInterval(spawnObstacle, 1700);
+
+gameLoop();
+</script>
+
 
 </body>
 </html>
