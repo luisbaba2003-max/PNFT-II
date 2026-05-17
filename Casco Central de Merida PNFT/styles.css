@@ -1002,4 +1002,88 @@ body {
 
 }
 
+/* ===== VIDEO PROMOCIONAL VERTICAL ===== */
+
+.promo-video-section {
+    padding: 100px 10%;
+    background: linear-gradient(135deg, #f5f7fa, #dfe9f3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 70px;
+    flex-wrap: wrap;
+}
+
+/* TEXTO */
+
+.promo-text {
+    flex: 1;
+    min-width: 300px;
+}
+
+.promo-text h2 {
+    font-size: 3rem;
+    color: #0a3d62;
+    margin-bottom: 25px;
+}
+
+.promo-text p {
+    font-size: 1.2rem;
+    line-height: 1.9;
+    color: #333;
+}
+
+/* CONTENEDOR VIDEO */
+
+.phone-video-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+/* VIDEO VERTICAL */
+
+.vertical-video {
+    width: 320px;
+    height: 570px;
+    object-fit: cover;
+    border-radius: 35px;
+    box-shadow:
+        0 15px 40px rgba(0,0,0,0.25),
+        0 0 0 10px #111;
+    background: black;
+    transition: 0.3s;
+}
+
+.vertical-video:hover {
+    transform: scale(1.03);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    .promo-video-section {
+        padding: 70px 7%;
+        gap: 40px;
+    }
+
+    .promo-text {
+        text-align: center;
+    }
+
+    .promo-text h2 {
+        font-size: 2rem;
+    }
+
+    .promo-text p {
+        font-size: 1rem;
+    }
+
+    .vertical-video {
+        width: 260px;
+        height: 480px;
+    }
+
+}
 
